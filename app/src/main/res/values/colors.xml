@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#4FA7C1</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <color name="headColor">#45A0E5</color>
+    <color name="bt_main_color">#20B2D1</color>
+    <color name="white_text">#FFFFFF</color>
+    <color name="back_bt">#21EEFF00</color>
+    <color name="background">#DEF1F8</color>
+    <color name="back_edit_text">#ffffff</color>
+    <color name="stroke_edit_text">#ffffff</color>
+    <color name="hint_edit_text">#000000</color>
+
+</resources>
