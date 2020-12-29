@@ -1,14 +1,12 @@
-
 package com.tiwttzel.hassanplus.data.api.result;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.HashMap;
 import java.util.Map;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 
-public class Stream implements Parcelable
-{
+public class Stream implements Parcelable {
 
     private String url;
     private String format;
@@ -30,7 +28,7 @@ public class Stream implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public Stream createFromParcel(Parcel in) {
             return new Stream(in);
@@ -40,8 +38,7 @@ public class Stream implements Parcelable
             return (new Stream[size]);
         }
 
-    }
-    ;
+    };
 
     protected Stream(Parcel in) {
         this.url = ((String) in.readValue((String.class.getClassLoader())));
@@ -59,7 +56,7 @@ public class Stream implements Parcelable
         this.hasAudio = ((boolean) in.readValue((boolean.class.getClassLoader())));
         this.hasVideo = ((boolean) in.readValue((boolean.class.getClassLoader())));
         this.isHd = ((boolean) in.readValue((boolean.class.getClassLoader())));
-        this.additionalProperties = ((Map<String, Object> ) in.readValue((Map.class.getClassLoader())));
+        this.additionalProperties = ((Map<String, Object>) in.readValue((Map.class.getClassLoader())));
     }
 
     public Stream() {
@@ -213,7 +210,7 @@ public class Stream implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
 }

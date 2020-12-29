@@ -52,6 +52,7 @@ public class DownLoadYoutubeAdapter extends RecyclerView.Adapter<DownLoadYoutube
         TextView mSizeTextView;
         TextView mQualityTextView;
         ConstraintLayout mConstraintLayout;
+
         public DownLoadHolder(@NonNull View itemView) {
             super(itemView);
             mSizeTextView = itemView.findViewById(R.id.size_text_view);

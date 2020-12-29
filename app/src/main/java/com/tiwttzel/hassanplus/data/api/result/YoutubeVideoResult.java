@@ -1,14 +1,13 @@
-
 package com.tiwttzel.hassanplus.data.api.result;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import android.os.Parcel;
-import android.os.Parcelable;
 
-public class YoutubeVideoResult implements Parcelable
-{
+public class YoutubeVideoResult implements Parcelable {
 
     private Boolean status;
     private String message;
@@ -33,7 +32,7 @@ public class YoutubeVideoResult implements Parcelable
 
 
         @SuppressWarnings({
-            "unchecked"
+                "unchecked"
         })
         public YoutubeVideoResult createFromParcel(Parcel in) {
             return new YoutubeVideoResult(in);
@@ -43,8 +42,7 @@ public class YoutubeVideoResult implements Parcelable
             return (new YoutubeVideoResult[size]);
         }
 
-    }
-    ;
+    };
 
     protected YoutubeVideoResult(Parcel in) {
         this.status = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
@@ -65,7 +63,7 @@ public class YoutubeVideoResult implements Parcelable
         this.uploaderUrl = ((String) in.readValue((String.class.getClassLoader())));
         this.thumbnail = ((String) in.readValue((String.class.getClassLoader())));
         in.readList(this.streams, (Stream.class.getClassLoader()));
-        this.additionalProperties = ((Map<String, Object> ) in.readValue((Map.class.getClassLoader())));
+        this.additionalProperties = ((Map<String, Object>) in.readValue((Map.class.getClassLoader())));
     }
 
     public YoutubeVideoResult() {
@@ -246,7 +244,7 @@ public class YoutubeVideoResult implements Parcelable
     }
 
     public int describeContents() {
-        return  0;
+        return 0;
     }
 
 }

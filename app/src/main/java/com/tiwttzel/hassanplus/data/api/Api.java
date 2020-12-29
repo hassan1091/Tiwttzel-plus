@@ -22,6 +22,7 @@ public class Api {
     public Call<TwitterVideoResult> getTwitterVideoResult(String url) {
         return retrofitBuild(BASE_TWITTER_URL).getTwitterVideoResult(url);
     }
+
     public Call<YoutubeVideoResult> getYoutubeVideoResult(String url) {
         return retrofitBuild(BASE_YOUTUBE_URL).getYoutubeVideoResultCall(url);
     }

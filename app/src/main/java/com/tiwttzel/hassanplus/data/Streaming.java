@@ -10,10 +10,11 @@ import java.util.List;
 public class Streaming implements Parcelable {
     private List<Stream> streams;
     private String thumbnail;
+
     public Streaming() {
     }
 
-    public Streaming(List<Stream> streams ,String thumbnail) {
+    public Streaming(List<Stream> streams, String thumbnail) {
         this.streams = streams;
         this.thumbnail = thumbnail;
     }

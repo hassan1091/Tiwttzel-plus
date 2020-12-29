@@ -102,7 +102,7 @@ public class DownloadActivity extends AppCompatActivity {
             });
             // ربط adapter مع recycler view
             recyclerView.setAdapter(downLoadTwitterAdapter);
-        } else if (mStreaming != null){
+        } else if (mStreaming != null) {
             // عرض البيانات على الشاشة
             displayUrl(mStreaming.getThumbnail());
             // وضع البيانات في adapter
@@ -114,9 +114,7 @@ public class DownloadActivity extends AppCompatActivity {
             });
             // ربط adapter مع recycler view
             recyclerView.setAdapter(downLoadYoutubeAdapter);
-        }
-
-        else finish();
+        } else finish();
 
         registerReceiver(onDownloadCompleteReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }

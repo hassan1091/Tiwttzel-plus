@@ -18,5 +18,5 @@ public interface ApiInterface {
             "x-rapidapi-key: 992d3a57e3msh0508e554d1b7ba8p16593djsn2271207113ac"
     })
     @GET("/")
-    Call<YoutubeVideoResult>getYoutubeVideoResultCall(@Query("url") String url);
+    Call<YoutubeVideoResult> getYoutubeVideoResultCall(@Query("url") String url);
 }
