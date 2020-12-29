@@ -1,4 +1,4 @@
-package com.tiwttzel.hassanplus;
+package com.tiwttzel.hassanplus.data;
 
 import android.content.Intent;
 import android.net.Uri;
