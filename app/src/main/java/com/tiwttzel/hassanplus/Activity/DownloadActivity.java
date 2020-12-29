@@ -28,32 +28,31 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.tiwttzel.hassanplus.AppExecutor;
 import com.tiwttzel.hassanplus.R;
-import com.tiwttzel.hassanplus.WorkForNotify;
 import com.tiwttzel.hassanplus.adapters.DownLoadTwitterAdapter;
+import com.tiwttzel.hassanplus.adapters.DownLoadYoutubeAdapter;
+import com.tiwttzel.hassanplus.app_executor.AppExecutor;
 import com.tiwttzel.hassanplus.data.ExtraContext;
+import com.tiwttzel.hassanplus.data.Streaming;
+import com.tiwttzel.hassanplus.data.WorkForNotify;
 import com.tiwttzel.hassanplus.data.api.result.Datum;
+import com.tiwttzel.hassanplus.data.api.result.Stream;
 import com.tiwttzel.hassanplus.data.api.result.TwitterVideoResult;
 import com.tiwttzel.hassanplus.data.database.DatabaseForAdapter;
 import com.tiwttzel.hassanplus.data.database.LastUrlList;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
 public class DownloadActivity extends AppCompatActivity {
     public static final String KEY_TWT_ID = "KEY_TWT_ID";
-    public static final String KEY_SIZE = "KEY_SIZE";
 
     private String mUserUrl;
 
-    private TwitterVideoResult twitterVideoResult = new TwitterVideoResult();
-
-    private DatabaseForAdapter databaseForAdapter;
+    private TwitterVideoResult mTwitterVideoResult = new TwitterVideoResult();
+    private Streaming mStreaming = new Streaming();
+    private DatabaseForAdapter mDatabaseForAdapter;
 
     private long mId;
-    private Datum mDatum;
 
     final BroadcastReceiver onDownloadCompleteReceiver = new BroadcastReceiver() {
         @Override
@@ -65,7 +64,7 @@ public class DownloadActivity extends AppCompatActivity {
                 System.out.println("DownloadActivity FILE URI " + uri.getPath());
                 String filePath = getRealPathFromURI(DownloadActivity.this, uri);
                 System.out.println("DownloadActivity FILE PATH " + filePath);
-                addUrlToDataBase(mDatum, filePath);
+                addUrlToDataBase(filePath);
             }
         }
     };
@@ -76,7 +75,7 @@ public class DownloadActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_download);
 
-        databaseForAdapter = DatabaseForAdapter.getsInstance(this);
+        mDatabaseForAdapter = DatabaseForAdapter.getsInstance(this);
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
         //جعل الشاشة بشكل عمودي
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
@@ -85,26 +84,41 @@ public class DownloadActivity extends AppCompatActivity {
         //عرض الاعلان
         displayGoogleAds();
         //جلب response body
-        twitterVideoResult = getIntent().getParcelableExtra(ExtraContext.TWITTER_DATA);
+        mTwitterVideoResult = getIntent().getParcelableExtra(ExtraContext.TWITTER_DATA);
+        mStreaming = getIntent().getParcelableExtra(ExtraContext.YOUTUBE_DATA);
         mUserUrl = getIntent().getStringExtra(ExtraContext.THIS_URL);
-        // تشغيل الرابط على الواجهة
-        if (twitterVideoResult == null) return;
-        displayUrl(Objects.requireNonNull(twitterVideoResult).getData().get(0).getUrl());
-        // وضع البيانات في adapter
-        DownLoadTwitterAdapter downLoadTwitterAdapter = new DownLoadTwitterAdapter(twitterVideoResult.getData(), new DownLoadTwitterAdapter.OnDownLoadTwitterItemClickListener() {
-            @Override
-            public void onItemDownLoadTwitterClicked(Datum datum) {
-                //ارسال الرابط الى قائمة اخر ما حمل
-                displayDownloadVideoAndNotify(datum);
-            }
-        });
         //تحديد وضع recycler view الى خطي
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // ربط adapter مع recycler view
-        recyclerView.setAdapter(downLoadTwitterAdapter);
+        // تشغيل الرابط على الواجهة
+        if (mTwitterVideoResult != null) {
+            displayUrl(Objects.requireNonNull(mTwitterVideoResult).getData().get(0).getUrl());
+            // وضع البيانات في adapter
+            DownLoadTwitterAdapter downLoadTwitterAdapter = new DownLoadTwitterAdapter(mTwitterVideoResult.getData(), new DownLoadTwitterAdapter.OnDownLoadTwitterItemClickListener() {
+                @Override
+                public void onItemDownLoadTwitterClicked(Datum datum) {
+                    //ارسال الرابط الى قائمة اخر ما حمل
+                    displayDownloadVideoAndNotify(datum.getUrl());
+                }
+            });
+            // ربط adapter مع recycler view
+            recyclerView.setAdapter(downLoadTwitterAdapter);
+        } else if (mStreaming != null){
+            // عرض البيانات على الشاشة
+            displayUrl(mStreaming.getThumbnail());
+            // وضع البيانات في adapter
+            DownLoadYoutubeAdapter downLoadYoutubeAdapter = new DownLoadYoutubeAdapter(mStreaming.getStreams(), new DownLoadYoutubeAdapter.OnDownLoaYoutubeItemClickListener() {
+                @Override
+                public void onItemDownLoadYoutubeClicked(Stream stream) {
+                    displayDownloadVideoAndNotify(stream.getUrl());
+                }
+            });
+            // ربط adapter مع recycler view
+            recyclerView.setAdapter(downLoadYoutubeAdapter);
+        }
+
+        else finish();
 
         registerReceiver(onDownloadCompleteReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
     }
 
     @Override
@@ -127,25 +141,27 @@ public class DownloadActivity extends AppCompatActivity {
 
     //تشغيل الرابط على الواجهة
     @SuppressLint("SetJavaScriptEnabled")
-    public void displayUrl(final String vUrl) {
+    public void displayUrl(String vUrl) {
         //String test = "http://api.nahn.tech/video/?url=https://video.twimg.com/ext_tw_video/1185280178781642760/pu/vid/1280x720/TX5WCv-FxFRLoK4V.mp4";
         WebView webView = findViewById(R.id.videoView);
         webView.getSettings().setJavaScriptEnabled(true);
+        if (mTwitterVideoResult != null)
+            vUrl = "http://api.nahn.tech/video/?url=" + vUrl;
+        final String finalVUrl = vUrl;
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl("http://api.nahn.tech/video/?url=" + vUrl);
+                view.loadUrl(finalVUrl);
                 return true;
             }
         });
-        webView.loadUrl("http://api.nahn.tech/video/?url=" + vUrl);
+        webView.loadUrl(finalVUrl);
     }
 
     //اوامر التحميل
-    public void displayDownloadVideoAndNotify(final Datum datum) {
-        mDatum = datum;
+    private void displayDownloadVideoAndNotify(String url) {
         String fileName = System.currentTimeMillis() + "t.mp4";
-        DownloadManager.Request downLoadRequest = new DownloadManager.Request(Uri.parse(datum.getUrl()));
+        DownloadManager.Request downLoadRequest = new DownloadManager.Request(Uri.parse(url));
         downLoadRequest.setTitle(fileName);
         downLoadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName);
         downLoadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
@@ -153,12 +169,9 @@ public class DownloadActivity extends AppCompatActivity {
         if (downloadManager != null) {
             mId = downloadManager.enqueue(downLoadRequest);
         }
-
-
         //اوامر اظهار الاشعار
         Data data = new Data.Builder()
-                .putString(KEY_TWT_ID, twitterVideoResult.getId())
-                .putString(KEY_SIZE, datum.getSzie())
+                .putString(KEY_TWT_ID, fileName)
                 .build();
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(WorkForNotify.class)
                 .setInputData(data)
@@ -192,19 +205,15 @@ public class DownloadActivity extends AppCompatActivity {
         return result;
     }
 
-    private void addUrlToDataBase(@NotNull Datum datum, final String filePath) {
+    private void addUrlToDataBase(final String filePath) {
         AppExecutor.getInstance().getDiskIO().execute(new Runnable() {
             @Override
             public void run() {
                 LastUrlList urlList = new LastUrlList();
                 urlList.setLastDownLoadUrl(mUserUrl);
                 urlList.setFilePath(filePath);
-                databaseForAdapter.lastUrlDaw().InsertUrl(urlList);
+                mDatabaseForAdapter.lastUrlDaw().InsertUrl(urlList);
             }
         });
-
-
     }
-
-
 }

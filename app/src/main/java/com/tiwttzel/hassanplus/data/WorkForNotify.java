@@ -1,4 +1,4 @@
-package com.tiwttzel.hassanplus;
+package com.tiwttzel.hassanplus.data;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,13 +12,13 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.tiwttzel.hassanplus.Activity.DownloadActivity;
+import com.tiwttzel.hassanplus.R;
 
 import java.util.Objects;
 
 public class WorkForNotify extends Worker {
     private final String mChannelName = "notification_Download";
     int i = 0;
-    private NotificationChannel channel;
 
     public WorkForNotify(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -29,15 +29,14 @@ public class WorkForNotify extends Worker {
     public Result doWork() {
 
         Data data = getInputData();
-        displayNotification(data.getString(DownloadActivity.KEY_TWT_ID)
-                , data.getString(DownloadActivity.KEY_SIZE));
+        displayNotification(data.getString(DownloadActivity.KEY_TWT_ID));
         Data dataOut = new Data.Builder()
                 .putInt("asd", i + 1)
                 .build();
         return Result.success(dataOut);
     }
 
-    private void displayNotification(String id, String size) {
+    private void displayNotification(String id) {
         Context context = getApplicationContext();
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -47,7 +46,6 @@ public class WorkForNotify extends Worker {
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, mChannelName);
         builder.setContentTitle(id)
-                .setContentText(context.getResources().getString(R.string.Size) + "=" + size)
                 .setSmallIcon(R.mipmap.ic_twittzel_three);
         Objects.requireNonNull(manager).notify(1, builder.build());
     }

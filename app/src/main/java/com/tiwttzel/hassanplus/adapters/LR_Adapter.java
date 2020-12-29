@@ -66,12 +66,12 @@ public class LR_Adapter extends RecyclerView.Adapter<LR_Adapter.LR_viewHolder> {
             shareImageView = itemView.findViewById(R.id.image_view_share);
             videoView = itemView.findViewById(R.id.videoView);
             constraintLayout = itemView.findViewById(R.id.constraint_layout);
-          /*  itemView.setOnClickListener(new View.OnClickListener() {
+            textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     onItemClickListener.onItemClickListener(getAdapterPosition(), lastUserUrlArray);
                 }
-            });*/
+            });
         }
 
         public void bind(LastUrlList lastUrlList) {

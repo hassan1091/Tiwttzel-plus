@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -38,14 +39,20 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.navigation.NavigationView;
-import com.tiwttzel.hassanplus.AboutUs;
-import com.tiwttzel.hassanplus.AppExecutor;
 import com.tiwttzel.hassanplus.R;
+import com.tiwttzel.hassanplus.app_executor.AppExecutor;
+import com.tiwttzel.hassanplus.data.AboutUs;
 import com.tiwttzel.hassanplus.data.ExtraContext;
+import com.tiwttzel.hassanplus.data.Streaming;
 import com.tiwttzel.hassanplus.data.api.Api;
 import com.tiwttzel.hassanplus.data.api.result.TwitterVideoResult;
+import com.tiwttzel.hassanplus.data.api.result.YoutubeVideoResult;
 
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -54,9 +61,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static final int CODE_LDU = 114;
     private String mUserUrl;
 
-    private EditText editText;
+    private EditText mEditText;
     private ProgressBar mProgressBar;
-
+    private Button youtubeButton;
+    private Button twitterButton;
 
     public InterstitialAd mInterstitialAd;
 
@@ -70,9 +78,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppTheme);
         setContentView(R.layout.activity_main);
-        editText = findViewById(R.id.E1);
+        mEditText = findViewById(R.id.E1);
         mProgressBar = findViewById(R.id.progressBar);
-
+        youtubeButton = findViewById(R.id.youtube_button);
+        twitterButton = findViewById(R.id.twitter_button);
         toolbar = findViewById(R.id.toolbar);
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -105,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //جلب البيانات اذا تم مشاركة الفيديو من تويتر
     private void displayGetFromTWT() {
-        if (!TextUtils.isEmpty(getUrlFromTwt())) editText.setText(getUrlFromTwt());
+        if (!TextUtils.isEmpty(getUrlFromTwt())) mEditText.setText(getUrlFromTwt());
     }
 
     //اعلان قوقل
@@ -153,30 +162,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 , new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
     }
 
-    //موقع زر حمل
-    public void bTForDownload(View view) {
-        view.setVisibility(View.INVISIBLE);
-        if (editText.getText().toString().isEmpty()) {
-            view.setVisibility(View.VISIBLE);
+    // موقع زر حمل تويتر
+    public boolean isReadyToDownload() {
+        hideYouTubeTwitterButton(true);
+        if (mEditText.getText().toString().isEmpty()) {
+            hideYouTubeTwitterButton(false);
             Toast.makeText(this, getResources().getString(R.string.Add_the_link), Toast.LENGTH_LONG).show();
-            return;
+            return false;
         }
         //التأكد من وجود الانترنت
         if (isNetworkAvailable()) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            //تشغيل API
-            displayTwitterApi(view);
-        } else {
-            view.setVisibility(View.INVISIBLE);
-            mProgressBar.setVisibility(View.GONE);
-            Toast.makeText(this, getResources().getString(R.string.You_do_not_have_internet_please_try_again_later), LENGTH_SHORT).show();
-        }
+            mUserUrl = String.valueOf(mEditText.getText());
 
+            return true;
+        } else {
+            hideYouTubeTwitterButton(true);
+
+            Toast.makeText(this, getResources().getString(R.string.You_do_not_have_internet_please_try_again_later), LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    // موقع زر حمل يوتيوب
+    public void btForYoutubeDownload(View view) {
+        if (isReadyToDownload())
+            displayYouTubeApi();
+    }
+
+    // موقع زر حمل تويتر
+    public void bTForTwitterDownload(View view) {
+        if (isReadyToDownload())
+            displayTwitterApi();
+    }
+
+    private void hideYouTubeTwitterButton(boolean toHide) {
+        if (toHide) {
+            youtubeButton.setVisibility(View.INVISIBLE);
+            twitterButton.setVisibility(View.INVISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            youtubeButton.setVisibility(View.VISIBLE);
+            twitterButton.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 
     // تفعيل api
-    private void displayTwitterApi(final View view) {
-        mUserUrl = String.valueOf(editText.getText());
+    private void displayTwitterApi() {
         new Api().getTwitterVideoResult(mUserUrl).enqueue(new retrofit2.Callback<TwitterVideoResult>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<TwitterVideoResult> call, @NonNull final retrofit2.Response<TwitterVideoResult> response) {
@@ -191,19 +223,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             intent.putExtra(ExtraContext.TWITTER_DATA, response.body());
                             intent.putExtra(ExtraContext.THIS_URL, mUserUrl);
                             startActivity(intent);
-                            view.setVisibility(View.VISIBLE);
+                            hideYouTubeTwitterButton(false);
                         }
                     });
                 } else {
-                    view.setVisibility(View.VISIBLE);
+                    hideYouTubeTwitterButton(false);
                     Log.e("response ", "!isSuccessful");
                 }
-                mProgressBar.setVisibility(View.GONE);
+
             }
 
             @Override
             public void onFailure(@NonNull retrofit2.Call<TwitterVideoResult> call, @NonNull Throwable t) {
-                mProgressBar.setVisibility(View.GONE);
+                hideYouTubeTwitterButton(false);
+                t.printStackTrace();
+            }
+        });
+    }
+
+    private void displayYouTubeApi() {
+        new Api().getYoutubeVideoResult(mUserUrl).enqueue(new Callback<YoutubeVideoResult>() {
+            @Override
+            public void onResponse(@NonNull Call<YoutubeVideoResult> call, @NonNull final Response<YoutubeVideoResult> response) {
+                if (response.isSuccessful()) {
+                    //فتح صفحة التحميل
+                    Log.e("response ", "isSuccessful");
+                    AppExecutor.getInstance().getMainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent intent = new Intent(MainActivity.this, DownloadActivity.class);
+                            assert response.body() != null;
+                            intent.putExtra(ExtraContext.YOUTUBE_DATA, new Streaming(response.body().getStreams(), response.body().getThumbnail()));
+                            intent.putExtra(ExtraContext.THIS_URL, mUserUrl);
+                            startActivity(intent);
+                            hideYouTubeTwitterButton(false);
+                        }
+                    });
+                } else {
+                    hideYouTubeTwitterButton(false);
+                    Log.e("response ", "!isSuccessful");
+                }
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<YoutubeVideoResult> call, @NonNull Throwable t) {
+                hideYouTubeTwitterButton(false);
                 t.printStackTrace();
             }
         });
@@ -211,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // استقبال الرابط من تويتر
     public String getUrlFromTwt() {
-        String theTwtUrl = "";
+        String sharedUrl = "";
         String receivedText;
         //get the received intent
         Intent receivedIntent = getIntent();
@@ -227,10 +292,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //handle sent text
                 receivedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
                 //set the text
-                if (receivedText != null) theTwtUrl = receivedText;
+                if (receivedText != null) sharedUrl = receivedText;
             }
         }
-        return theTwtUrl;
+        return sharedUrl;
     }
 
     // الانتقال الى صفحة LastDownUrlActivity
@@ -244,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onActivityResult(requestCode, resultCode, data);
         //تعين قيمة editTest بالرابط المختار
         if (requestCode == CODE_LDU) if (resultCode == RESULT_OK && data != null)
-            editText.setText(data.getStringExtra(ExtraContext.THIS_URL));
+            mEditText.setText(data.getStringExtra(ExtraContext.THIS_URL));
     }
 
     //تغيير من الوضع الداكن الى الوضع البيعي والعكس
@@ -270,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //<a target="_blank" href="https://icons8.com/icons/set/paste">Paste icon</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
     public void paste(View view) {
         if (!getPastedTextFromClipboard().equals(""))
-            editText.setText(getPastedTextFromClipboard());
+            mEditText.setText(getPastedTextFromClipboard());
     }
 
     private CharSequence getPastedTextFromClipboard() {
