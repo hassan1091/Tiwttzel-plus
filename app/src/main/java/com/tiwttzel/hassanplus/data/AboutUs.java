@@ -21,7 +21,6 @@ public class AboutUs {
     public static Intent openOurLinkIn() {
         String linkIn = "https://www.linkedin.com/company/%D9%86%D8%AD%D9%86-%D9%86%D9%88%D8%AC%D9%87%D9%83";
         return new Intent(Intent.ACTION_VIEW, Uri.parse(linkIn));
-
     }
 
     // فتح البريد الالكتروني
