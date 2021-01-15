@@ -13,7 +13,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    allprojects {
+        repositories {
+            maven { url 'https://jitpack.io' }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -54,5 +58,8 @@ dependencies {
     implementation "androidx.work:work-runtime:$work_version"
     //read more text view
     implementation 'com.borjabravo:readmoretextview:2.0.1'
-
+    // gif
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.17'
+    // Toast styles
+    implementation 'com.github.Pierry:SimpleToast:v1.7'
 }
