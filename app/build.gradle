@@ -6,18 +6,14 @@ android {
 
     defaultConfig {
         applicationId "com.tiwttzel.hassanplus"
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 29
-        versionCode 1
+        versionCode 2
         versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    allprojects {
-        repositories {
-            maven { url 'https://jitpack.io' }
-        }
-    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -26,6 +22,11 @@ android {
     }
 }
 
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
