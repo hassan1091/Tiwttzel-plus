@@ -17,12 +17,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class DownLoadYoutubeAdapter extends RecyclerView.Adapter<DownLoadYoutubeAdapter.DownLoadHolder> {
+
     public interface OnDownLoaYoutubeItemClickListener {
         void onItemDownLoadYoutubeClicked(Stream stream);
     }
 
-    List<Stream> streams;
-    OnDownLoaYoutubeItemClickListener onDownLoaYoutubeItemClickListener;
+    private List<Stream> streams;
+    private OnDownLoaYoutubeItemClickListener onDownLoaYoutubeItemClickListener;
 
     public DownLoadYoutubeAdapter(List<Stream> streams, OnDownLoaYoutubeItemClickListener onDownLoaYoutubeItemClickListener) {
         this.streams = streams;
@@ -34,7 +35,7 @@ public class DownLoadYoutubeAdapter extends RecyclerView.Adapter<DownLoadYoutube
     public DownLoadHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_download, parent, false);
-        return new DownLoadYoutubeAdapter.DownLoadHolder(view);
+        return new DownLoadYoutubeAdapter.DownLoadHolder(view, onDownLoaYoutubeItemClickListener);
     }
 
     @Override
@@ -48,19 +49,37 @@ public class DownLoadYoutubeAdapter extends RecyclerView.Adapter<DownLoadYoutube
     }
 
 
-    public class DownLoadHolder extends RecyclerView.ViewHolder {
-        TextView mSizeTextView;
-        TextView mQualityTextView;
-        ConstraintLayout mConstraintLayout;
+    static class DownLoadHolder extends RecyclerView.ViewHolder {
+        private TextView mSizeTextView;
+        private TextView mQualityTextView;
+        private ConstraintLayout mConstraintLayout;
+        private Stream stream;
 
-        public DownLoadHolder(@NonNull View itemView) {
+        public DownLoadHolder(@NonNull View itemView, OnDownLoaYoutubeItemClickListener onDownLoaYoutubeItemClickListener) {
             super(itemView);
+
+            getViews();
+
+            getListeners(onDownLoaYoutubeItemClickListener);
+        }
+
+        private void getViews() {
             mSizeTextView = itemView.findViewById(R.id.size_text_view);
             mQualityTextView = itemView.findViewById(R.id.quality_text_view);
             mConstraintLayout = itemView.findViewById(R.id.constraint_layout);
         }
 
-        private void bind(final Stream stream) {
+        private void getListeners(final OnDownLoaYoutubeItemClickListener onDownLoaYoutubeItemClickListener) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onDownLoaYoutubeItemClickListener.onItemDownLoadYoutubeClicked(stream);
+                }
+            });
+        }
+
+        private void bind(Stream stream) {
+            this.stream = stream;
             boolean isCompleteStream = stream.getExtension().equals("mp4") && !stream.getFormat().equals("audio only");
             if (!isCompleteStream)
                 mConstraintLayout.setVisibility(View.GONE);
@@ -76,14 +95,7 @@ public class DownLoadYoutubeAdapter extends RecyclerView.Adapter<DownLoadYoutube
                 String quality = stream.getHeight() + "X" + stream.getWidth();
                 mQualityTextView.setText(quality);
             }
-
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onDownLoaYoutubeItemClickListener.onItemDownLoadYoutubeClicked(stream);
-                }
-            });
         }
+
     }
 }
