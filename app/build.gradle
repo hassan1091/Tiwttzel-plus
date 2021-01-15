@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "30.0.1"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.tiwttzel.hassanplus"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,7 +36,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.navigation:navigation-runtime:2.3.2'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
@@ -45,8 +45,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     testImplementation("com.squareup.okhttp3:mockwebserver:4.3.1")
     //retrofit
-    implementation "com.squareup.retrofit2:retrofit:2.6.2"
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     // recyclerview
     implementation "androidx.recyclerview:recyclerview:1.1.0"
     implementation 'com.google.android.gms:play-services-ads:19.6.0'
