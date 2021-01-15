@@ -1,6 +1,7 @@
 package com.tiwttzel.hassanplus.Activity;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -12,7 +13,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.view.Window;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -23,6 +27,7 @@ import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.github.pierry.simpletoast.SimpleToast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -47,12 +52,15 @@ public class DownloadActivity extends AppCompatActivity {
     public static final String KEY_TWT_ID = "KEY_TWT_ID";
 
     private String mUserUrl;
+    private long mId;
 
     private TwitterVideoResult mTwitterVideoResult = new TwitterVideoResult();
     private Streaming mStreaming = new Streaming();
+
     private DatabaseForAdapter mDatabaseForAdapter;
 
-    private long mId;
+    private Dialog settingsDialogMid;
+    private Dialog settingsDialogEnd;
 
     final BroadcastReceiver onDownloadCompleteReceiver = new BroadcastReceiver() {
         @Override
@@ -65,6 +73,14 @@ public class DownloadActivity extends AppCompatActivity {
                 String filePath = getRealPathFromURI(DownloadActivity.this, uri);
                 System.out.println("DownloadActivity FILE PATH " + filePath);
                 addUrlToDataBase(filePath);
+                showFinishedDownload();
+            } else {
+                if (settingsDialogMid.isShowing()) {
+                    SimpleToast.error(DownloadActivity.this, getString(R.string.error_in_downloading));
+                    settingsDialogMid.setCanceledOnTouchOutside(true);
+                    settingsDialogMid.cancel();
+                }
+
             }
         }
     };
@@ -117,12 +133,40 @@ public class DownloadActivity extends AppCompatActivity {
         } else finish();
 
         registerReceiver(onDownloadCompleteReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        setSettingsDialog();
     }
 
     @Override
     protected void onDestroy() {
         unregisterReceiver(onDownloadCompleteReceiver);
         super.onDestroy();
+    }
+    private void setSettingsDialog() {
+        settingsDialogMid = new Dialog(this);
+        settingsDialogEnd = new Dialog(this);
+        Objects.requireNonNull(settingsDialogMid.getWindow()).requestFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(settingsDialogEnd.getWindow()).requestFeature(Window.FEATURE_NO_TITLE);
+        settingsDialogMid.setContentView(getLayoutInflater().inflate(R.layout.layout_download_mid, null));
+        settingsDialogEnd.setContentView(getLayoutInflater().inflate(R.layout.layout_download_end, null));
+        settingsDialogMid.setCanceledOnTouchOutside(false);
+        settingsDialogEnd.setCanceledOnTouchOutside(true);
+    }
+
+
+    private void showFinishedDownload() {
+        if (settingsDialogMid.isShowing())
+            settingsDialogMid.cancel();
+        settingsDialogEnd.show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (settingsDialogEnd.isShowing())
+                    settingsDialogEnd.cancel();
+                startActivity(new Intent(DownloadActivity.this, LastDownUrlActivity.class));
+                finish();
+            }
+        }, 500);
     }
 
     //تشغيل اعلانات قوقل بانر.
@@ -143,12 +187,16 @@ public class DownloadActivity extends AppCompatActivity {
         //String test = "http://api.nahn.tech/video/?url=https://video.twimg.com/ext_tw_video/1185280178781642760/pu/vid/1280x720/TX5WCv-FxFRLoK4V.mp4";
         WebView webView = findViewById(R.id.videoView);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.setInitialScale(5);
         if (mTwitterVideoResult != null)
             vUrl = "http://api.nahn.tech/video/?url=" + vUrl;
         final String finalVUrl = vUrl;
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
                 view.loadUrl(finalVUrl);
                 return true;
             }
@@ -166,6 +214,10 @@ public class DownloadActivity extends AppCompatActivity {
         final DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         if (downloadManager != null) {
             mId = downloadManager.enqueue(downLoadRequest);
+            if (mId != 0) settingsDialogMid.show();
+        } else {
+            if (settingsDialogMid.isShowing())
+                settingsDialogMid.cancel();
         }
         //اوامر اظهار الاشعار
         Data data = new Data.Builder()
