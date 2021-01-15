@@ -75,10 +75,10 @@ public class LastDownUrlActivity extends AppCompatActivity {
         //بدء حدث حيما  يتم النقر على الزر
         lr_adapter = new LR_Adapter(urlLists, new LR_Adapter.OnItemClickListener() {
             @Override
-            public void onItemClickListener(int position, List<LastUrlList> lastUserUrlArray) {
+            public void onItemClickListener(LastUrlList lastUrlList) {
                 //اخذ الرابط المختار وارساله الى MainActivity
                 Intent intent = new Intent();
-                intent.putExtra(ExtraContext.THIS_URL, lastUserUrlArray.get(position).getLastDownLoadUrl());
+                intent.putExtra(ExtraContext.THIS_URL, lastUrlList.getLastDownLoadUrl());
                 setResult(RESULT_OK, intent);
                 finish();
             }
